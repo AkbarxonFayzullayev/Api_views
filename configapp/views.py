@@ -89,6 +89,10 @@ class ActorDetailApi(APIView):
             response['success'] = False
             return Response(data=response)
 
+class MovieCreateView(CreateAPIView):
+    queryset = Movie.objects.all()
+    serializer_class = MovieSerializer
+
 class ActorCreateView(CreateAPIView):
     queryset = Actor.objects.all()
     serializer_class = ActorSerializer
@@ -97,18 +101,17 @@ class MovieViewSet(ModelViewSet):
     queryset = Movie.objects.all()
     serializer_class = MovieSerializer
 
-    @action(detail=True,methods=['post'])
-    def add_actor(self,request,pk):
-        movie = self.get_object()
-        actor_id = request.data.get('actor_id')
+    @action(detail=True, methods=['post'])
+    def add_actor(self, request, pk=None):
 
+        movie = self.get_object()
+
+        actor_id = request.data.get('actor_id')
         if not actor_id:
             return Response({"error": "actor_id required"}, status=status.HTTP_400_BAD_REQUEST)
         try:
-            actor = Actor.objects.get(id=actor_id)
+            actor = Actor.objects.get(pk=actor_id)
         except Actor.DoesNotExist:
             return Response({"error": "Actor not found"}, status=status.HTTP_404_NOT_FOUND)
         movie.actors.add(actor)
         return Response({"message": f"Actor {actor.name} added to movie {movie.name}"}, status=status.HTTP_200_OK)
-
-
